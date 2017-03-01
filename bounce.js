@@ -38,7 +38,7 @@ pc.script.create('bounce', function (app) {
                 result.other.script.platform_character_controller.jump(this.bounceImpusle);
                 if(!this.bouncing) {
                     this.bouncing = true;
-                    this.startTween(this.defaultPos,this.bouncePos,this.bouncing);
+                    //this.startTween(this.defaultPos,this.bouncePos,this.bouncing);
                 }
             }
         },
@@ -60,7 +60,7 @@ pc.script.create('bounce', function (app) {
                     self.entity.rigidbody.syncEntityToBody();
                 }
             }).onComplete(function() {
-                if(bouncing) {
+                if(self.bouncing) {
                     self.startTween(self.bouncePos,self.defaultPos,false);
                 } else {
                     self.bouncing = false;

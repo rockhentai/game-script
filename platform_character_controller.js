@@ -38,8 +38,12 @@ pc.script.create('platform_character_controller', function (app) {
         this.animationState = STATE_IDLE;
         
         this.jTime = 0;
+        this.maxJump = 1;
         
         this.levels = null;
+        
+        this.isShrunken = false;
+        this.isGrown = false;
     };
 
     Platform_character_controller.prototype = {
@@ -108,15 +112,24 @@ pc.script.create('platform_character_controller', function (app) {
         
         moveLeft:function() {
             if(!this.dead) {
-                this.entity.rigidbody.applyImpulse(-this.moveImpulse,0,0);
-                this.model.setEulerAngles(0,-90,0);
+                var vel = this.entity.rigidbody.linearVelocity;
+                var speed = vel.length();
+                //console.log(speed);
+                if(speed<=6.4) {
+                    this.entity.rigidbody.applyImpulse(-this.moveImpulse,0,0);
+                    this.model.setEulerAngles(0,-90,0);
+                }
             }
         },
         
         moveRight:function() {
             if(!this.dead) {
-                this.entity.rigidbody.applyImpulse(this.moveImpulse,0,0);
-                this.model.setEulerAngles(0,90,0);
+                var vel = this.entity.rigidbody.linearVelocity;
+                var speed = vel.length();
+                if(speed<=6.4) {
+                    this.entity.rigidbody.applyImpulse(this.moveImpulse,0,0);
+                    this.model.setEulerAngles(0,90,0);
+                }
             }
         },
         
@@ -125,7 +138,7 @@ pc.script.create('platform_character_controller', function (app) {
                 impulse = this.jumpImpulse;
             }
             if(!this.dead && this.jumpTimer < 0) {
-                if(this.jTime < 2) {
+                if(this.jTime < this.maxJump) {
                     this.entity.sound.play('jump');
                     this.entity.rigidbody.applyImpulse(0,impulse,0);
                     
@@ -196,6 +209,7 @@ pc.script.create('platform_character_controller', function (app) {
         
         onKilled:function(killer) {
             if(!this.dead) {
+                window.game.death += 1;
                 this.curBgm.sound.pause('8bit');
                 this.model.animation.play(ANIMATIONS.die,0.1);
                 this.model.animation.speed = 1.5;
@@ -214,6 +228,7 @@ pc.script.create('platform_character_controller', function (app) {
         },
         
         reset:function(origin) {
+            this.resetSize();
             this.entity.setPosition(origin);
             this.entity.rigidbody.syncEntityToBody();
             this.entity.rigidbody.linearVelocity = pc.Vec3.ZERO;
@@ -221,10 +236,38 @@ pc.script.create('platform_character_controller', function (app) {
             this.dead = false;
             this.jTime = 0;
             this.idle();
+            //重置破碎的block
+            game.fire('reset');
             var self = this;
             setTimeout(function() {
                 self.curBgm.sound.resume('8bit');
             },1500);
+        },
+        
+        shrink:function() {
+            if(!this.isShrunken) {
+                this.isShrunken = true;
+                this.entity.setLocalScale(0.5,0.5,0.5);
+                this.entity.collision.height = 0.625;
+                this.entity.collision.radius = 0.15;
+                CHECK_GROUND_RAY.y = -0.35;
+                //this.isGrown = false;
+                this.jumpImpulse = 4;
+                this.entity.sound.play('shrink');
+            } else {
+                this.entity.sound.play('grow');
+                this.resetSize();
+            }
+        },
+        
+        resetSize:function() {
+            //this.isGrown = false;
+            this.isShrunken = false;
+            this.entity.setLocalScale(1,1,1);
+            this.entity.collision.height = 1.15;
+            this.entity.collision.radius = 0.3;
+            CHECK_GROUND_RAY.y = -0.7;
+            this.jumpImpulse = 4.7;
         }
     };
 

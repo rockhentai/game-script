@@ -30,6 +30,53 @@ pc.script.create('player_input', function (app) {
             
             this.X = 0;
             this.Y = 0;
+            
+            //移动端输入
+            if(app.touch) {
+                var css = function() { /*
+                    #touchUI {
+                        position:absolute;
+                        bottom:140px;
+                        color:#fff;
+                        font-size:24px;
+                        z-index:999;
+                        width:100%;
+                    }
+                    .btn {
+                        float:left;
+                        width:48px;
+                        height:48px;
+                        margin-left:20px;
+                    }
+                    .left {
+                        background:url(https://o8cc0hg6o.bkt.clouddn.com/l.png);
+                    }
+                    .right {
+                        background:url(https://o8cc0hg6o.bkt.clouddn.com/r.png);
+                    }
+                    .jump {
+                        float:right;
+                        background:url(https://o8cc0hg6o.bkt.clouddn.com/up.png);
+                    }
+                    .shrink {
+                        float:right;
+                        background:url(https://o8cc0hg6o.bkt.clouddn.com/d.png);
+                    }
+                    
+                */}.toString().trim();
+                css = css.slice(css.indexOf('/*') + 2).slice(0,-3);
+                $('<style/>').text(css).appendTo($('head'));
+                this.touchUi = $('<div />').attr('id','touchUI').appendTo($('body'));
+                this.initTouchController();
+            }
+            
+        },
+        
+        initTouchController:function() {
+            this.btnLeft = $('<div />').addClass('btn left').appendTo(this.touchUi);
+            this.btnRight = $('<div />').addClass('btn right').appendTo(this.touchUi);
+            this.btnJump = $('<div />').addClass('btn jump').appendTo(this.touchUi);
+            this.btnShrink = $('<div />').addClass('btn shrink').appendTo(this.touchUi);
         },
 
         // Called every frame, dt is time in seconds since last update
@@ -46,11 +93,30 @@ pc.script.create('player_input', function (app) {
             
             if(app.touch) {
                 var self = this;
+                var a = true;
                 app.touch.on('touchstart',function(e) {
-                    self.startX = e.touches[0].x;
-                    self.startY = e.touches[0].y;
-                    self.playerScript.jump();
+//                     self.startX = e.touches[0].x;
+//                     self.startY = e.touches[0].y;
+                    //self.playerScript.jump();
                     //console.log(e.touches[0].x);
+                });
+                this.btnLeft.on('touchend',function(e) {
+                    if( a === true) {
+                       self.playerScript.moveLeft();
+                    }
+                    a = false;
+                });
+                this.btnRight.on('touchend',function(e) {
+                    if(a===true) {
+                        self.playerScript.moveRight(); 
+                    }
+                   a = false;
+                });
+                this.btnJump.on('touchstart',function(e) {
+                   self.playerScript.jump(); 
+                });
+                this.btnShrink.on('touchstart',function(e) {
+                   self.playerScript.shrink();
                 });
 //                 app.touch.on('touchmove',function(e) {
 //                     e.event.preventDefault();
@@ -71,6 +137,9 @@ pc.script.create('player_input', function (app) {
             
             if(app.keyboard.wasPressed(pc.input.KEY_R)) {
                 this.playerScript.reset(this.origin);
+            }
+            if(app.keyboard.wasPressed(pc.input.KEY_S)) {
+                this.playerScript.shrink();
             }
         },
         

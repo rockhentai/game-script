@@ -1,12 +1,12 @@
-pc.script.attribute('worth','number',1);
+pc.script.attribute('worth','number',-1);
 
-pc.script.create('collide', function (app) {
-    // Creates a new Collide instance
-    var Collide = function (entity) {
+pc.script.create('mushroom', function (app) {
+    // Creates a new Mushroom instance
+    var Mushroom = function (entity) {
         this.entity = entity;
     };
 
-    Collide.prototype = {
+    Mushroom.prototype = {
         // Called once after all resources are loaded and before the first update
         initialize: function () {
             this.entity.collision.on('triggerenter',this.onTriggerEnter,this);
@@ -16,9 +16,10 @@ pc.script.create('collide', function (app) {
         update: function (dt) {
         },
         
-        onTriggerEnter:function(result) {
-            if(result.name === "robot") {
-                result.script.platform_character_controller.maxJump = 2;
+        onTriggerEnter:function(other) {
+            if(other.name === 'robot') {
+                other.script.platform_character_controller.maxJump = 1;
+                other.sound.play('weak');
                 this.entity.model.enabled = false;
                 this.entity.collision.enabled = false;
                 window.game.collectStars(this.worth);
@@ -26,5 +27,5 @@ pc.script.create('collide', function (app) {
         }
     };
 
-    return Collide;
+    return Mushroom;
 });

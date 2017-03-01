@@ -8,18 +8,20 @@ pc.script.create('tank', function (app) {
         this.entity = entity;
         this.animationTimer = 0;
         this.gunPosition = new pc.Vec3();
+        this.shootInterval = 0;
     };
 
     Tank.prototype = {
         // Called once after all resources are loaded and before the first update
         initialize: function () {
-            if(app.touch) {
-                app.touch.on('touchstart',this.shoot,this);
-            } else {
-                app.mouse.on('mousedown',this.shoot,this);
-            }
+//             if(app.touch) {
+//                 app.touch.on('touchstart',this.shoot,this);
+//             } else {
+//                 app.mouse.on('mousedown',this.shoot,this);
+//             }
             
             this.gunPosition.copy(this.gun.getLocalPosition());
+            this.shootInterval = 5;
         },
         
         shoot:function() {

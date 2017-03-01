@@ -37,6 +37,7 @@ pc.script.create('goal', function (app) {
         onTrigger:function(other) {
             //判断entity是否有platform_character_controller脚本，如果有就是游戏角色
             if(other.script && other.script.platform_character_controller) {
+                other.sound.play('pipe');
                 //把当前关卡disable
                 var currentLevel = this.getCurrentLevel();
                 if(currentLevel) {
@@ -56,6 +57,7 @@ pc.script.create('goal', function (app) {
                     var playerStart = nextLevel.findByName('PlayerStart');
                     if(playerStart) {
                         other.script.platform_character_controller.reset(playerStart.getPosition());
+                        other.script.platform_character_controller.maxJump = 1;
                     } else {
                         console.error("Goal can't find PlayerStart entity in " + this.nextLevelEntityName);
                     }

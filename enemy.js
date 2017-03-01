@@ -1,5 +1,8 @@
 pc.script.attribute('speed','number',2);
 pc.script.attribute('turnSpeed','number',90);
+pc.script.attribute('enemyType','string','spike');
+pc.script.attribute('playerEntityName','string','',{displayName:'Player Entity Name'});
+pc.script.attribute('damage','number',5);
 
 pc.script.create('enemy', function (app) {
     var RAYCAST_RAY = new pc.Vec3(0,-0.6,0);
@@ -7,6 +10,8 @@ pc.script.create('enemy', function (app) {
     var STATE_IDLE = 0;
     var STATE_MOVE = 1;
     var STATE_TURN = 2;
+    
+    var temp = new pc.Vec3();
     // Creates a new Enemy instance
     var Enemy = function (entity) {
         this.entity = entity;
@@ -22,6 +27,8 @@ pc.script.create('enemy', function (app) {
         this.minX = 0;
         this.maxX = 0;
         this.halfWidth = 0.5;
+        
+        this.player = null;
     };
 
     Enemy.prototype = {
@@ -35,6 +42,8 @@ pc.script.create('enemy', function (app) {
             
             this.halfWidth = this.entity.collision.radius;
             this.turningAngle = this.entity.getEulerAngles().y;
+            
+            this.player = app.root.findByName(this.playerEntityName);
         },
 
         // Called every frame, dt is time in seconds since last update
@@ -72,6 +81,7 @@ pc.script.create('enemy', function (app) {
                 }
                 this.entity.setEulerAngles(0,this.turningAngle,0);
             }
+            this.isPlayerFront();
         },
         
         setupPlatform:function() {
@@ -117,8 +127,20 @@ pc.script.create('enemy', function (app) {
         
         onTrigger:function(result) {
             if(result.other.script && result.other.script.damage) {
-                console.log('do damage');
-                result.other.script.damage.doDamage(10,this.entity);
+                result.other.script.damage.doDamage(this.damage,this.entity);
+                console.log(this.damage);
+            }
+        },
+        
+        isPlayerFront:function() {
+            if(this.player) {
+                var distance = temp.copy(this.player.getPosition()).sub(this.entity.getPosition()).length();
+                if(distance < 4) {
+                    if(this.enemyType === 'tank') {
+                        var tank = this.entity.findByName('tank');
+                        tank.script.tank.shoot();
+                    }
+                }
             }
         }
     };
